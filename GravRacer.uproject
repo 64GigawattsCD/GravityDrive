@@ -1,0 +1,42 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "4.26",
+  "Category": "",
+  "Description": "",
+  "Modules": [
+    {
+      "Name": "GravRacer",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": [
+        "Engine",
+        "AIModule",
+        "GameplayAbilities",
+        "UMG"
+      ]
+    },
+    {
+      "Name": "GravRacerLoadingScreen",
+      "Type": "Runtime",
+      "LoadingPhase": "PreLoadingScreen"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "GameplayAbilities",
+      "Enabled": true
+    },
+    {
+      "Name": "OnlineSubsystem",
+      "Enabled": true
+    },
+    {
+      "Name": "OnlineSubsystemUtils",
+      "Enabled": true
+    }
+  ],
+  "TargetPlatforms": [
+    "WindowsNoEditor"
+  ],
+  "EpicSampleNameHash": "3868556100"
+}
