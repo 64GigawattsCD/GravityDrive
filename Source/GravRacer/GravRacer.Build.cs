@@ -10,11 +10,11 @@ public class GravRacer : ModuleRules
 
         PrivateIncludePaths.AddRange(
             new string[] {
-                "ShooterGame/Private",
-                "ShooterGame/Private/UI",
-                "ShooterGame/Private/UI/Menu",
-                "ShooterGame/Private/UI/Style",
-                "ShooterGame/Private/UI/Widgets",
+                "GravRacer/Private",
+                "GravRacer/Private/UI",
+                "GravRacer/Private/UI/Menu",
+                "GravRacer/Private/UI/Style",
+                "GravRacer/Private/UI/Widgets",
             }
         );
 
@@ -38,6 +38,8 @@ public class GravRacer : ModuleRules
             new string[] {
                 "Slate",
                 "SlateCore",
+                "UMG",
+                "InputCore",
                 "GameplayAbilities",
 			    "GameplayTags",
 			    "GameplayTasks",
