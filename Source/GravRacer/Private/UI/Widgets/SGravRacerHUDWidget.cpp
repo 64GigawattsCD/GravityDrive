@@ -2,7 +2,7 @@
 
 #include "SGravRacerHUDWidget.h"
 #include "UI/Style/GravRacerStyle.h"
-#include "GASShooterGameModeBase.h"
+#include "GravRacerGameMode.h"
 
 #define LOCTEXT_NAMESPACE "GravRacer.hUD"
 
@@ -43,7 +43,7 @@ void SGravRacerHUDWidget::Construct(const FArguments& InArgs)
 
 FText SGravRacerHUDWidget::GetInfoText() const
 {
-	AGASShooterGameModeBase* const MyGame = OwnerWorld->GetAuthGameMode<AGASShooterGameModeBase>();
+	AGravRacerGameMode* const MyGame = OwnerWorld->GetAuthGameMode<AGravRacerGameMode>();
 	//return MyGame->GetGameInfoText();
 	//TODO
 	return FText();
@@ -51,7 +51,7 @@ FText SGravRacerHUDWidget::GetInfoText() const
 
 EVisibility SGravRacerHUDWidget::GetInfoTextVisibility() const
 {
-	AGASShooterGameModeBase* const MyGame = OwnerWorld->GetAuthGameMode<AGASShooterGameModeBase>();
+	AGravRacerGameMode* const MyGame = OwnerWorld->GetAuthGameMode<AGravRacerGameMode>();
 	//return (MyGame && !MyGame->GetGameInfoText().IsEmpty()) ? EVisibility::Visible : EVisibility::Collapsed;
 	//TODO
 	return EVisibility::Hidden;

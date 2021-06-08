@@ -1,0 +1,77 @@
+Change Log
+-----------------
+
+
+Version 2.1.5
+-------------
+Revised system of activation and license management.
+
+Version 2.1.4
+-------------
+Added additional resampling options when importing raster data.
+Edit layers feature automatically enabled on created landscape actors.
+Improved functions related to attributes in shape data actors.
+
+
+Version 2.1.3
+-------------
+Implemented proper handling of actor naming while creating multiple shape actors during a single import operation.
+Fixed bugs with duplicate attribute sets being created during spline actor import.
+Fixed crash related to actor naming during certain import operations.
+
+Version 2.1.2
+-------------
+Added ability to import a series of points as a spline, combining the individual point shapes together into spline data.
+Added functions to TerraFormSplineActor for accessing atributes as they relate to the distance along the spline.
+Made optimizations to prevent TerraFormSplineMeshActor for regenerating its meshes unecessarily.
+
+Version 2.1.1
+-------------
+Added blueprint implementable event BP_ProcessAttributesList to point and spline actors. Allows better custom attribute implementation at BP level.
+
+Version 2.1.0
+-------------
+Spline actor import.
+Integrated attribute import with point and spline actor import processes.
+Integrated attribute import with landscape spline import processes.
+Integratd mesh pool into spline actors in class TerraFormSplineMeshActor.
+Various improvements to shape data processing.
+Various improvements to landscape and landscape spline creation.
+Added an indicator to editor mode panel for in progress communication with license server.
+Inmplemented spline connection system for creating networks of spline actors.
+Complete overhaul of shape data import dialogues.
+
+Version 2.0.5
+-------------
+Fixed linker error when packaging projects.
+Updated internal georefferencing systems.
+Fixed errors where product activation expired prematurely.
+Fixed slate error on import window close.
+
+Version 2.0.4
+-------------
+Improved performance when importing GIS lines as Splines.
+Fixed bug where landscape scale failed to set correctly with some QGIS DTM data.
+Fixed bug where projection information failed to set correctly with some QGIS DTM data.
+Fixed bug where TerraForm deactivated unexpectedly. 
+Replaced TerraForm mode icons.
+Added TerraForm Landscape Anchor icon.
+
+Version 2.0.3
+-------------
+Fixed bug in activation system for annual subscriptions.
+Added 'Import Lines as Blueprint Splines' function.
+Fixed bug where importing spline onto static meshes caused control point z-value to be set at 0.
+
+Version 2.0.2
+-------------
+First public release of TerraForm Version 2.
+
+Version 2.0.1
+-------------
+Internal release candidate.
+
+Version 2.0.0
+-------------
+Internal beta.
+

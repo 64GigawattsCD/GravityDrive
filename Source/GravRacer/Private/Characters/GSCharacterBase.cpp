@@ -3,6 +3,7 @@
 
 #include "Characters/GSCharacterBase.h"
 #include "Characters/Abilities/AttributeSets/GSAttributeSetBase.h"
+#include "Characters/Abilities/AttributeSets/GSAttributeSetMobility.h"
 #include "Characters/Abilities/GSAbilitySystemComponent.h"
 #include "Characters/Abilities/GSAbilitySystemGlobals.h"
 #include "Characters/Abilities/GSGameplayAbility.h"
@@ -135,81 +136,42 @@ float AGSCharacterBase::GetMaxHealth() const
 	return 0.0f;
 }
 
-float AGSCharacterBase::GetMana() const
+
+float AGSCharacterBase::GetFuel() const
 {
-	if (IsValid(AttributeSetBase))
+	if (IsValid(AttributeSetMovement))
 	{
-		return AttributeSetBase->GetMana();
+		return AttributeSetMovement->GetFuel();
 	}
 
 	return 0.0f;
 }
 
-float AGSCharacterBase::GetMaxMana() const
+float AGSCharacterBase::GetMaxFuel() const
 {
-	if (IsValid(AttributeSetBase))
+	if (IsValid(AttributeSetMovement))
 	{
-		return AttributeSetBase->GetMaxMana();
+		return AttributeSetMovement->GetMaxFuel();
 	}
 
 	return 0.0f;
 }
 
-float AGSCharacterBase::GetStamina() const
+float AGSCharacterBase::GetArmor() const
 {
 	if (IsValid(AttributeSetBase))
 	{
-		return AttributeSetBase->GetStamina();
+		return AttributeSetBase->GetArmor();
 	}
 
 	return 0.0f;
 }
 
-float AGSCharacterBase::GetMaxStamina() const
+float AGSCharacterBase::GetMaxArmor() const
 {
 	if (IsValid(AttributeSetBase))
 	{
-		return AttributeSetBase->GetMaxStamina();
-	}
-
-	return 0.0f;
-}
-
-float AGSCharacterBase::GetShield() const
-{
-	if (IsValid(AttributeSetBase))
-	{
-		return AttributeSetBase->GetShield();
-	}
-
-	return 0.0f;
-}
-
-float AGSCharacterBase::GetMaxShield() const
-{
-	if (IsValid(AttributeSetBase))
-	{
-		return AttributeSetBase->GetMaxShield();
-	}
-
-	return 0.0f;
-}
-
-float AGSCharacterBase::GetMoveSpeed() const
-{
-	if (IsValid(AttributeSetBase))
-	{
-		return AttributeSetBase->GetMoveSpeed();
-	}
-
-	return 0.0f;
-}
-
-float AGSCharacterBase::GetMoveSpeedBaseValue() const
-{
-	if (IsValid(AttributeSetBase))
-	{
-		return AttributeSetBase->GetMoveSpeedAttribute().GetGameplayAttributeData(AttributeSetBase)->GetBaseValue();
+		return AttributeSetBase->GetMaxArmor();
 	}
 
 	return 0.0f;
@@ -310,26 +272,18 @@ void AGSCharacterBase::SetHealth(float Health)
 	}
 }
 
-void AGSCharacterBase::SetMana(float Mana)
+void AGSCharacterBase::SetFuel(float Fuel)
 {
-	if (IsValid(AttributeSetBase))
+	if (IsValid(AttributeSetMovement))
 	{
-		AttributeSetBase->SetMana(Mana);
+		AttributeSetMovement->SetFuel(Fuel);
 	}
 }
 
-void AGSCharacterBase::SetStamina(float Stamina)
+void AGSCharacterBase::SetArmor(float Armor)
 {
 	if (IsValid(AttributeSetBase))
 	{
-		AttributeSetBase->SetStamina(Stamina);
-	}
-}
-
-void AGSCharacterBase::SetShield(float Shield)
-{
-	if (IsValid(AttributeSetBase))
-	{
-		AttributeSetBase->SetShield(Shield);
+		AttributeSetBase->SetArmor(Armor);
 	}
 }

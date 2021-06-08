@@ -15,9 +15,9 @@ namespace EGravRacerSaveGameVersion
 		// Initial version
 		Initial,
 		// Added Inventory
-		AddedInventory,
+		//AddedInventory,
 		// Added ItemData to store count/level
-		AddedItemData,
+		//AddedItemData,
 
 		// -----<new versions must be added before this line>-------------------------------------------------
 		VersionPlusOne,

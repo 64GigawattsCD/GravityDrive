@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "GameFramework/GameModeBase.h"
 #include "GravRacer_Menu.generated.h"
 
 class AController;

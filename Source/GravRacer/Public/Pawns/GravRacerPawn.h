@@ -63,6 +63,12 @@ protected:
 
 public:
 
+	//Stats
+
+	//Fuel vehicles are respawned with
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "")
+	float SpawnFuel;
+
 	/** notify about touching new checkpoint */
 	void OnTrackPointReached(AVehicleTrackPoint* TrackPoint);
 

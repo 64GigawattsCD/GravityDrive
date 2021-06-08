@@ -8,7 +8,12 @@
 #include "GameplayEffectTypes.h"
 #include "GSPlayerState.generated.h"
 
+class UCharacterDataAsset;
+class UVehicleDataAsset;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FGSOnGameplayAttributeValueChangedDelegate, FGameplayAttribute, Attribute, float, NewValue, float, OldValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelCharacter, UCharacterDataAsset*, Char, int32, Skin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelVehicle, UVehicleDataAsset*, Char, int32, Skin);
 
 /**
  * 
@@ -25,8 +30,7 @@ public:
 	class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	class UGSAttributeSetBase* GetAttributeSetBase() const;
-
-	class UGSAmmoAttributeSet* GetAmmoAttributeSet() const;
+	class UGSAttributeSetMobility* GetAttributeSetMovement() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState")
 	bool IsAlive() const;
@@ -61,37 +65,13 @@ public:
 	float GetHealthRegenRate() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetMana() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetMaxMana() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetManaRegenRate() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetStamina() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetMaxStamina() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetStaminaRegenRate() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetShield() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetMaxShield() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetShieldRegenRate() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
 	float GetArmor() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	float GetMoveSpeed() const;
+	float GetMaxArmor() const;
+
+	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
+	float GetArmorRegenRate() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
 	int32 GetCharacterLevel() const;
@@ -108,11 +88,47 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
 	int32 GetGoldBounty() const;
 
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	int32 GetPrimaryClipAmmo() const;
+public:
 
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSPlayerState|Attributes")
-	int32 GetPrimaryReserveAmmo() const;
+	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation, Category = "Character")
+	void SetSelectedCharacter(UCharacterDataAsset* NewCharacter, int32 Skin = 0);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation, Category = "Vehicle")
+	void SetSelectedVehicle(UVehicleDataAsset* NewVehicle, int32 Skin = 0);
+
+protected:
+
+	UPROPERTY(ReplicatedUsing = OnRep_Character)
+	UCharacterDataAsset* Character;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Character)
+	int32 CharacterSkin;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Vehicle)
+	UVehicleDataAsset* Vehicle;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Vehicle)
+	int32 VehicleSkin;
+
+	UFUNCTION()
+	virtual void OnRep_Character();
+
+	UFUNCTION()
+	virtual void OnRep_Vehicle();
+
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	UCharacterDataAsset* GetCharacter(int32& Skin) const { Skin = CharacterSkin; return Character; };
+
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	UVehicleDataAsset* GetVehicle(int32& Skin) const { Skin = VehicleSkin; return Vehicle; };
+
+	UPROPERTY(BlueprintAssignable)
+	FOnSelCharacter OnCharacterSelected;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnSelVehicle OnVehicleSelected;
 
 protected:
 	FGameplayTag DeadTag;
@@ -125,7 +141,7 @@ protected:
 	class UGSAttributeSetBase* AttributeSetBase;
 
 	UPROPERTY()
-	class UGSAmmoAttributeSet* AmmoAttributeSet;
+	class UGSAttributeSetMobility* AttributeSetMovement;
 
 	// Attribute changed delegate handles
 	FDelegateHandle HealthChangedDelegateHandle;
@@ -138,4 +154,26 @@ protected:
 
 public:
 	int32 GetTeamNum();
+
+	UFUNCTION()
+	void SetPlacement(int32 NewPlacement) { Placement = NewPlacement; };
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetPlacement() const { return Placement; };
+
+	void SetRespawnLocation(FTransform NewRespawn) { RespawnLocation = NewRespawn; };
+
+	UFUNCTION(BlueprintCallable)
+	FTransform GetRespawnTransform() const { return RespawnLocation; };
+
+protected:
+
+	UPROPERTY(Transient, Replicated)
+	FTransform RespawnLocation;
+
+	int32 Placement;
+	int32 Lap;
+	int32 MajorPoint;
+	int32 MinorPoint;
+
 };

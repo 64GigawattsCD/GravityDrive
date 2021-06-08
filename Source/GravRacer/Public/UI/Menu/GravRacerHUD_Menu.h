@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GravRacerTypes.h"
+#include "GameFramework/HUD.h"
 #include "GravRacerHUD_Menu.generated.h"
 
 class SGravRacerMenuWidget;

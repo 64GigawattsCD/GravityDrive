@@ -4,35 +4,10 @@
 //#include "GravRacer.h"
 #include "Pawns/GravRacerPawn.h"
 #include "Curves/CurveFloat.h"
-
+#include "GameFramework/PhysicsVolume.h"
+#include "Net/UnrealNetwork.h"
 
 const float UGravRacerMovementComponent::DensityAir = 1.225f;
-
-/*
-void FSimpleJetEngineData::SetExhaustVelocityFactor(float TopSpeed, float DragConstant)
-{
-	ExhaustVelocityFactor = (0.5f) * DragConstant / (IntakeArea.X * IntakeArea.Y);
-}
-
-void FSimpleJetEngineData::SetAfterburnVelocityFactor(float TopSpeed, float DragConstant)
-{
-	AfterburnVelocityFactor = (0.5f) * DragConstant / (IntakeArea.X * IntakeArea.Y);
-
-	float MaxThrust = 0.f;
-	float RPMS = 0.f;
-	Update(1.f, true, UGravRacerMovementComponent::DensityAir, TopSpeed, MaxThrust, RPMS);
-	RPMsPerNewton = MaxRPMs / MaxThrust;
-
-}
-
-void FSimpleJetEngineData::Update(float Throttle, bool AfterBurn, float AirDensity, float Velocity, float& OutThrust, float& OutRPMs)
-{
-	const float V = (FMath::Max(Velocity, 15.f));
-	const float Intake = (IntakeArea.X * IntakeArea.Y) * Throttle;
-	const float MassAirPerSecond = AirDensity * Intake * V;
-	OutThrust = (MassAirPerSecond * (AfterBurn? AfterburnVelocityFactor : ExhaustVelocityFactor) * Velocity) - (MassAirPerSecond * Velocity);
-	OutRPMs = OutThrust * RPMsPerNewton;
-}*/
 
 UGravRacerMovementComponent::UGravRacerMovementComponent()
 {
@@ -51,7 +26,11 @@ void UGravRacerMovementComponent::TickComponent(float DeltaSeconds, ELevelTick T
 {
 	DebugIndex = 0;
 	Super::TickComponent(DeltaSeconds, TickType, ThisTickFunction);
-	ApplyPhysics(DeltaSeconds);
+
+	if (GetGravRacer() && (GetGravRacer()->IsLocallyControlled() || GetGravRacer()->HasAuthority()))
+	{
+		ApplyPhysics(DeltaSeconds);
+	}
 }
 
 void UGravRacerMovementComponent::InitializeComponent()
@@ -74,9 +53,6 @@ void UGravRacerMovementComponent::InitializeComponent()
 	if (GetGravRacer())
 	{
 		SetUpdatedComponent(GetGravRacer()->GetMesh());
-		
-		//EngineSetup.SetExhaustVelocityFactor(GetGravRacer()->GetTopSpeed(), DragArea.X);
-		//EngineSetup.SetAfterburnVelocityFactor(GetGravRacer()->GetAfterBurnerSpeed(), DragArea.X);
 
 		SetUpHover();
 	}
@@ -131,17 +107,50 @@ void UGravRacerMovementComponent::AddDeltaV(FVector DeltaV, bool MpS /*= true*/)
 void UGravRacerMovementComponent::SetThrottleInput(float Value)
 {
 	Throttle = FMath::Clamp(Value, -1.f, 1.f);
+
+	if (!GetOwner()->HasAuthority())
+	{
+		ServerSetThrottle(Throttle);
+	}
 }
 
 void UGravRacerMovementComponent::SetSteeringInput(float Value)
 {
 	Steering = FMath::Clamp(Value, -1.f, 1.f);
+
+	if (!GetOwner()->HasAuthority())
+	{
+		ServerSetSteering(Steering);
+	}
+}
+
+void UGravRacerMovementComponent::ServerSetThrottle_Implementation(float NewThrottle)
+{
+	SetThrottleInput(NewThrottle);
+}
+
+bool UGravRacerMovementComponent::ServerSetThrottle_Validate(float NewThrottle)
+{
+	return true;
+}
+
+void UGravRacerMovementComponent::ServerSetSteering_Implementation(float NewSteering)
+{
+	SetSteeringInput(NewSteering);
+}
+
+bool UGravRacerMovementComponent::ServerSetSteering_Validate(float NewSteering)
+{
+	return true;
 }
 
 void UGravRacerMovementComponent::ApplyPhysics(float DeltaSeconds)
 {
 	//First friction
 	ApplyFriction(DeltaSeconds);
+	
+	//Gravity
+	//ApplyGravity(DeltaSeconds);
 
 	//Apply control physics
 	PhysicsHover(DeltaSeconds);
@@ -415,6 +424,13 @@ void UGravRacerMovementComponent::ApplyFriction(float DeltaSeconds)
 		ForceFriction += ((0.5f) * FluidDensity * FMath::Pow(V, 2.f) * DArea) * Axis;
 	}
 
+	//Omit falling
+	if (IsAirborne)
+	{
+		const FVector GravDir = FVector(0.f, 0.f, -1.f);
+		ForceFriction = FVector::VectorPlaneProject(ForceFriction, GravDir);
+	}
+
 	if (!ForceFriction.ContainsNaN() && !ForceFriction.IsZero())
 	{
 		//Scale by time fraction and apply
@@ -430,6 +446,15 @@ void UGravRacerMovementComponent::ApplyFriction(float DeltaSeconds)
 		FString Message = "Drag Force: " + ForceFriction.ToString();
 		GEngine->AddOnScreenDebugMessage(DebugIndex++, 0.f, FColor::Turquoise, *Message);
 	}
+}
+
+void UGravRacerMovementComponent::ApplyGravity(float DeltaSeconds)
+{
+	//TODO: custom gravity direction
+
+	//m/s
+	const FVector DeltaV = FVector(0.f, 0.f, 980.f);
+	AddVelocity(DeltaV);
 }
 
 FVector UGravRacerMovementComponent::GetLocalSpaceVelocity() const
@@ -452,5 +477,7 @@ void UGravRacerMovementComponent::GetLifetimeReplicatedProps(TArray< FLifetimePr
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UGravRacerMovementComponent, HoverDistance);
+	DOREPLIFETIME_CONDITION(UGravRacerMovementComponent, Throttle, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(UGravRacerMovementComponent, Steering, COND_SkipOwner);
 }
 

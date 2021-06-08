@@ -3,20 +3,94 @@
 
 #include "Player/GSPlayerController.h"
 
-#include "Characters/Abilities/AttributeSets/GSAmmoAttributeSet.h"
 #include "Characters/Abilities/AttributeSets/GSAttributeSetBase.h"
 #include "Characters/Abilities/GSAbilitySystemComponent.h"
 
 #include "Pawns/GravRacerPawn.h"
 #include "Player/GSPlayerState.h"
+#include "GravRacerGameMode.h"
 
 #include "Blueprint/UserWidget.h"
 #include "UI/GSHUDWidget.h"
+#include "UI/GRLoadingScreenWidget.h"
 
 #include "Weapons/GSWeapon.h"
 
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/LevelStreaming.h"
+
+
+AGSPlayerController::AGSPlayerController()
+{
+	LevelLoadAck = -1;
+	UIHUDWidgetClass = StaticLoadClass(UObject::StaticClass(), nullptr, TEXT("/Game/GASShooter/UI/UI_HUD.UI_HUD_C"));
+	UICharacterSelectWidgetClass = StaticLoadClass(UObject::StaticClass(), nullptr, TEXT("/Game/UI/CharacterSelect/WBP_CharacterSelectHUD.WBP_CharacterSelectHUD_C"));
+	LoadingScreenWidgetClass = StaticLoadClass(UObject::StaticClass(), nullptr, TEXT("/Game/UI/Loading/WBP_Loading.WBP_Loading_C"));
+}
+
+
+void AGSPlayerController::CreateLoadingScreen()
+{
+	if (LoadingScreenWidget || !LoadingScreenWidgetClass || !IsLocalPlayerController())
+	{
+		return;
+	}
+
+	LoadingScreenWidget = CreateWidget<UGRLoadingScreenWidget>(this, LoadingScreenWidgetClass);
+	LoadingScreenWidget->AddToViewport();
+	LoadingScreenWidget->ShowLoadingScreen();
+}
+
+
+void AGSPlayerController::ShowLoadingScreen()
+{
+	if (LoadingScreenWidget)
+	{
+		LoadingScreenWidget->ShowLoadingScreen();
+	}
+}
+
+
+void AGSPlayerController::HideLoadingScreen()
+{
+	if (LoadingScreenWidget)
+	{
+		LoadingScreenWidget->HideLoadingScreen();
+	}
+}
+
+
+void AGSPlayerController::CreateCharacterSelect()
+{
+	if (CharacterSelectWidget || !UICharacterSelectWidgetClass || !IsLocalPlayerController())
+	{
+		return;
+	}
+
+	CharacterSelectWidget = CreateWidget<UUserWidget>(this, UICharacterSelectWidgetClass);
+	CharacterSelectWidget->AddToViewport();
+	SetInputMode(FInputModeUIOnly());
+	SetShowMouseCursor(true);
+}
+
+
+void AGSPlayerController::RemoveCharacterSelect()
+{
+	if (CharacterSelectWidget)
+	{
+		CharacterSelectWidget->RemoveFromParent();
+		CharacterSelectWidget = nullptr;
+	}
+
+	SetInputMode(FInputModeGameOnly());
+	SetShowMouseCursor(false);
+}
+
 void AGSPlayerController::CreateHUD()
 {
+	RemoveCharacterSelect();
+
 	// Only create once
 	if (UIHUDWidget)
 	{
@@ -49,19 +123,19 @@ void AGSPlayerController::CreateHUD()
 	UIHUDWidget->SetCurrentHealth(PS->GetHealth());
 	UIHUDWidget->SetMaxHealth(PS->GetMaxHealth());
 	UIHUDWidget->SetHealthPercentage(PS->GetHealth() / PS->GetMaxHealth());
-	UIHUDWidget->SetCurrentMana(PS->GetMana());
-	UIHUDWidget->SetMaxMana(PS->GetMaxMana());
-	UIHUDWidget->SetManaPercentage(PS->GetMana() / PS->GetMaxMana());
+	//UIHUDWidget->SetCurrentMana(PS->GetMana());
+	//UIHUDWidget->SetMaxMana(PS->GetMaxMana());
+	//UIHUDWidget->SetManaPercentage(PS->GetMana() / PS->GetMaxMana());
 	UIHUDWidget->SetHealthRegenRate(PS->GetHealthRegenRate());
-	UIHUDWidget->SetManaRegenRate(PS->GetManaRegenRate());
-	UIHUDWidget->SetCurrentStamina(PS->GetStamina());
-	UIHUDWidget->SetMaxStamina(PS->GetMaxStamina());
-	UIHUDWidget->SetStaminaPercentage(PS->GetStamina() / PS->GetMaxStamina());
-	UIHUDWidget->SetStaminaRegenRate(PS->GetStaminaRegenRate());
-	UIHUDWidget->SetCurrentShield(PS->GetShield());
-	UIHUDWidget->SetMaxShield(PS->GetMaxShield());
-	UIHUDWidget->SetShieldRegenRate(PS->GetShieldRegenRate());
-	UIHUDWidget->SetShieldPercentage(PS->GetShield() / PS->GetMaxShield());
+	//UIHUDWidget->SetManaRegenRate(PS->GetManaRegenRate());
+	//UIHUDWidget->SetCurrentStamina(PS->GetStamina());
+	//UIHUDWidget->SetMaxStamina(PS->GetMaxStamina());
+	//UIHUDWidget->SetStaminaPercentage(PS->GetStamina() / PS->GetMaxStamina());
+	//UIHUDWidget->SetStaminaRegenRate(PS->GetStaminaRegenRate());
+	//UIHUDWidget->SetCurrentShield(PS->GetShield());
+	//UIHUDWidget->SetMaxShield(PS->GetMaxShield());
+	//UIHUDWidget->SetShieldRegenRate(PS->GetShieldRegenRate());
+	//UIHUDWidget->SetShieldPercentage(PS->GetShield() / PS->GetMaxShield());
 	UIHUDWidget->SetExperience(PS->GetXP());
 	UIHUDWidget->SetGold(PS->GetGold());
 	UIHUDWidget->SetHeroLevel(PS->GetCharacterLevel());
@@ -78,7 +152,7 @@ void AGSPlayerController::CreateHUD()
 			//UIHUDWidget->SetPrimaryClipAmmo(Hero->GetPrimaryClipAmmo());
 			UIHUDWidget->SetReticle(CurrentWeapon->GetPrimaryHUDReticleClass());
 
-			// PlayerState's Pawn isn't set up yet so we can't just call PS->GetPrimaryReserveAmmo()
+			/*
 			if (PS->GetAmmoAttributeSet())
 			{
 				FGameplayAttribute Attribute = PS->GetAmmoAttributeSet()->GetReserveAmmoAttributeFromTag(CurrentWeapon->PrimaryAmmoType);
@@ -86,7 +160,7 @@ void AGSPlayerController::CreateHUD()
 				{
 					UIHUDWidget->SetPrimaryReserveAmmo(PS->GetAbilitySystemComponent()->GetNumericAttribute(Attribute));
 				}
-			}
+			}*/
 		}
 	}
 }
@@ -94,6 +168,12 @@ void AGSPlayerController::CreateHUD()
 UGSHUDWidget* AGSPlayerController::GetGSHUD()
 {
 	return UIHUDWidget;
+}
+
+
+void AGSPlayerController::BeginPlay()
+{
+	CreateLoadingScreen();
 }
 
 void AGSPlayerController::SetEquippedWeaponPrimaryIconFromSprite(UPaperSprite* InSprite)
@@ -231,4 +311,94 @@ void AGSPlayerController::ServerKill_Implementation()
 bool AGSPlayerController::ServerKill_Validate()
 {
 	return true;
+}
+
+bool AGSPlayerController::ClientLoadLevels_Validate(const TArray<FName> &LevelsToLoad, const TArray<FName> &LevelsToUnload, int32 Ack)
+{
+	return true;
+}
+
+void AGSPlayerController::ClientLoadLevels_Implementation(const TArray<FName> &LevelsToLoad, const TArray<FName> &LevelsToUnload, int32 Ack)
+{
+	ShowLoadingScreen();
+
+	for (FName LevelToUnload : LevelsToUnload)
+	{
+		if (!LevelsPendingUnload.Contains(LevelToUnload))
+		{
+			FLatentActionInfo LatentActionInfo;
+			LatentActionInfo.CallbackTarget = this;
+			LatentActionInfo.ExecutionFunction = "OnLevelLoaded";
+			//Really not sure about this
+			LatentActionInfo.UUID = FCString::Atoi(*FGuid::NewGuid().ToString());
+			LatentActionInfo.Linkage = 0;
+
+			UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, LatentActionInfo, false);
+
+			LevelsPendingUnload.Add(LevelToUnload);
+		}
+	}
+
+	for (FName LevelToLoad : LevelsToLoad)
+	{
+		if (!LevelsPendingLoad.Contains(LevelToLoad))
+		{
+			FLatentActionInfo LatentActionInfo;
+			LatentActionInfo.CallbackTarget = this;
+			LatentActionInfo.ExecutionFunction = "OnLevelLoaded";
+			//Really not sure about this
+			LatentActionInfo.UUID = FCString::Atoi(*FGuid::NewGuid().ToString());
+			LatentActionInfo.Linkage = 0;
+
+			UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LatentActionInfo);
+
+			LevelsPendingLoad.Add(LevelToLoad);
+		}
+	}
+
+	LevelLoadAck = Ack;
+}
+
+void AGSPlayerController::OnLevelLoaded()
+{
+
+	for (int32 I = LevelsPendingUnload.Num() - 1; I > -1; I--)
+	{
+		FName Level = LevelsPendingUnload[I];
+		ULevelStreaming* LevelInst = UGameplayStatics::GetStreamingLevel(this, Level);
+		if (!LevelInst || !LevelInst->IsLevelLoaded())
+		{
+			LevelsPendingUnload.Remove(Level);
+		}
+	}
+
+	for (int32 I = LevelsPendingLoad.Num() - 1; I > -1; I--)
+	{
+		FName Level = LevelsPendingLoad[I];
+		if (UGameplayStatics::GetStreamingLevel(this, Level))
+		{
+			LevelsPendingLoad.Remove(Level);
+		}
+	}
+
+	if (LevelsPendingLoad.Num() == 0 && LevelsPendingUnload.Num() == 0)
+	{
+		LevelLoadingComplete();
+	}
+}
+
+void AGSPlayerController::LevelLoadingComplete()
+{
+	HideLoadingScreen();
+	ServerConfirmLevelLoad(LevelLoadAck);
+}
+
+bool AGSPlayerController::ServerConfirmLevelLoad_Validate(int32 Ack)
+{
+	return true;
+}
+
+void AGSPlayerController::ServerConfirmLevelLoad_Implementation(int32 Ack)
+{
+	Cast<AGravRacerGameMode>(GetWorld()->GetAuthGameMode())->ClientLoadComplete(this, Ack);
 }

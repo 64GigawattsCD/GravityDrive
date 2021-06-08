@@ -42,66 +42,26 @@ public:
 	FGameplayAttributeData HealthRegenRate;
 	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, HealthRegenRate)
 
-	// Current Mana, used to execute special abilities. Capped by MaxMana.
-	UPROPERTY(BlueprintReadOnly, Category = "Mana", ReplicatedUsing = OnRep_Mana)
-	FGameplayAttributeData Mana;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, Mana)
-
-	// MaxMana is its own attribute since GameplayEffects may modify it
-	UPROPERTY(BlueprintReadOnly, Category = "Mana", ReplicatedUsing = OnRep_MaxMana)
-	FGameplayAttributeData MaxMana;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, MaxMana)
-
-	// Mana regen rate will passively increase Mana every second
-	UPROPERTY(BlueprintReadOnly, Category = "Mana", ReplicatedUsing = OnRep_ManaRegenRate)
-	FGameplayAttributeData ManaRegenRate;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, ManaRegenRate)
-
-	// Current stamina, used to execute special abilities. Capped by MaxStamina.
-	UPROPERTY(BlueprintReadOnly, Category = "Stamina", ReplicatedUsing = OnRep_Stamina)
-	FGameplayAttributeData Stamina;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, Stamina)
-
-	// MaxStamina is its own attribute since GameplayEffects may modify it
-	UPROPERTY(BlueprintReadOnly, Category = "Stamina", ReplicatedUsing = OnRep_MaxStamina)
-	FGameplayAttributeData MaxStamina;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, MaxStamina)
-
-	// Stamina regen rate will passively increase Stamina every second
-	UPROPERTY(BlueprintReadOnly, Category = "Stamina", ReplicatedUsing = OnRep_StaminaRegenRate)
-	FGameplayAttributeData StaminaRegenRate;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, StaminaRegenRate)
-
-	// Current shield acts like temporary health. When depleted, damage will drain regular health.
-	UPROPERTY(BlueprintReadOnly, Category = "Shield", ReplicatedUsing = OnRep_Shield)
-	FGameplayAttributeData Shield;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, Shield)
-
-	// Maximum shield that we can have.
-	UPROPERTY(BlueprintReadOnly, Category = "Shield", ReplicatedUsing = OnRep_MaxShield)
-	FGameplayAttributeData MaxShield;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, MaxShield)
-
-	// Shield regen rate will passively increase Shield every second
-	UPROPERTY(BlueprintReadOnly, Category = "Shield", ReplicatedUsing = OnRep_ShieldRegenRate)
-	FGameplayAttributeData ShieldRegenRate;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, ShieldRegenRate)
-
-	// Armor reduces the amount of damage done by attackers
+	// Current Armor acts like temporary health. When depleted, damage will drain regular health.
 	UPROPERTY(BlueprintReadOnly, Category = "Armor", ReplicatedUsing = OnRep_Armor)
 	FGameplayAttributeData Armor;
 	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, Armor)
+
+	// Maximum Armor that we can have.
+	UPROPERTY(BlueprintReadOnly, Category = "Armor", ReplicatedUsing = OnRep_MaxArmor)
+	FGameplayAttributeData MaxArmor;
+	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, MaxArmor)
+
+	// Armor regen rate will passively increase Armor every second
+	UPROPERTY(BlueprintReadOnly, Category = "Armor", ReplicatedUsing = OnRep_ArmorRegenRate)
+	FGameplayAttributeData ArmorRegenRate;
+	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, ArmorRegenRate)
 
 	// Damage is a meta attribute used by the DamageExecution to calculate final damage, which then turns into -Health
 	// Temporary value that only exists on the Server. Not replicated.
 	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 	FGameplayAttributeData Damage;
 	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, Damage)
-
-	// MoveSpeed affects how fast characters can move.
-	UPROPERTY(BlueprintReadOnly, Category = "MoveSpeed", ReplicatedUsing = OnRep_MoveSpeed)
-	FGameplayAttributeData MoveSpeed;
-	ATTRIBUTE_ACCESSORS(UGSAttributeSetBase, MoveSpeed)
 
 	UPROPERTY(BlueprintReadOnly, Category = "Character Level", ReplicatedUsing = OnRep_CharacterLevel)
 	FGameplayAttributeData CharacterLevel;
@@ -132,7 +92,6 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	FGameplayTag HeadShotTag;
 
 	// Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes.
 	// (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before)
@@ -152,37 +111,13 @@ protected:
 	virtual void OnRep_HealthRegenRate(const FGameplayAttributeData& OldHealthRegenRate);
 
 	UFUNCTION()
-	virtual void OnRep_Mana(const FGameplayAttributeData& OldMana);
-
-	UFUNCTION()
-	virtual void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana);
-
-	UFUNCTION()
-	virtual void OnRep_ManaRegenRate(const FGameplayAttributeData& OldManaRegenRate);
-
-	UFUNCTION()
-	virtual void OnRep_Stamina(const FGameplayAttributeData& OldStamina);
-
-	UFUNCTION()
-	virtual void OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina);
-
-	UFUNCTION()
-	virtual void OnRep_StaminaRegenRate(const FGameplayAttributeData& OldStaminaRegenRate);
-
-	UFUNCTION()
-	virtual void OnRep_Shield(const FGameplayAttributeData& OldShield);
-
-	UFUNCTION()
-	virtual void OnRep_MaxShield(const FGameplayAttributeData& OldMaxShield);
-
-	UFUNCTION()
-	virtual void OnRep_ShieldRegenRate(const FGameplayAttributeData& OldShieldRegenRate);
-
-	UFUNCTION()
 	virtual void OnRep_Armor(const FGameplayAttributeData& OldArmor);
 
 	UFUNCTION()
-	virtual void OnRep_MoveSpeed(const FGameplayAttributeData& OldMoveSpeed);
+	virtual void OnRep_MaxArmor(const FGameplayAttributeData& OldMaxArmor);
+
+	UFUNCTION()
+	virtual void OnRep_ArmorRegenRate(const FGameplayAttributeData& OldArmorRegenRate);
 
 	UFUNCTION()
 	virtual void OnRep_CharacterLevel(const FGameplayAttributeData& OldCharacterLevel);

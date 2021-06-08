@@ -18,11 +18,19 @@ class GRAVRACER_API AGSPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
-	void CreateHUD();
+	AGSPlayerController();
 
+	void CreateLoadingScreen();
+	void ShowLoadingScreen();
+	void HideLoadingScreen();
+
+	void CreateCharacterSelect();
+	void RemoveCharacterSelect();
+
+	void CreateHUD();
 	class UGSHUDWidget* GetGSHUD();
 
-
+	virtual void BeginPlay() override;
 	/**
 	* Weapon HUD info
 	*/
@@ -72,8 +80,20 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GASShooter|UI")
 	TSubclassOf<class UGSHUDWidget> UIHUDWidgetClass;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GASShooter|UI")
+	TSubclassOf<class UUserWidget> UICharacterSelectWidgetClass;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GASShooter|UI")
+	TSubclassOf<class UGRLoadingScreenWidget> LoadingScreenWidgetClass;
+
 	UPROPERTY(BlueprintReadWrite, Category = "GASShooter|UI")
 	class UGSHUDWidget* UIHUDWidget;
+
+	UPROPERTY(BlueprintReadWrite, Category = "GASShooter|UI")
+	class UUserWidget* CharacterSelectWidget;
+
+	UPROPERTY(BlueprintReadWrite, Category = "GASShooter|UI")
+	class UGRLoadingScreenWidget* LoadingScreenWidget;
 
 	// Server only
 	virtual void OnPossess(APawn* InPawn) override;
@@ -87,4 +107,21 @@ protected:
 	void ServerKill();
 	void ServerKill_Implementation();
 	bool ServerKill_Validate();
+
+public:
+	UFUNCTION(Client, Reliable, WithValidation)
+	void ClientLoadLevels(const TArray<FName> &LevelsToLoad, const TArray<FName> &LevelsToUnload, int32 Ack);
+
+protected:
+
+	int32 LevelLoadAck;
+	TArray<FName> LevelsPendingLoad;
+	TArray<FName> LevelsPendingUnload;
+
+	UFUNCTION()
+	void OnLevelLoaded();
+	void LevelLoadingComplete();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerConfirmLevelLoad(int32 Ack);
 };

@@ -5,6 +5,7 @@
 #include "SlateBasics.h"
 #include "SlateExtras.h"
 #include "GravRacerTypes.h"
+#include "GameFramework/PlayerInput.h"
 
 class AGravRacerHUD;
 

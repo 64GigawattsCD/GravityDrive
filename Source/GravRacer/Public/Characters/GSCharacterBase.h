@@ -81,30 +81,16 @@ public:
 	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSCharacter|Attributes")
-	float GetMana() const;
+	float GetFuel() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSCharacter|Attributes")
-	float GetMaxMana() const;
+	float GetMaxFuel() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSCharacter|Attributes")
-	float GetStamina() const;
+	float GetArmor() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSCharacter|Attributes")
-	float GetMaxStamina() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSCharacter|Attributes")
-	float GetShield() const;
-
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSCharacter|Attributes")
-	float GetMaxShield() const;
-
-	// Gets the Current value of MoveSpeed
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSCharacter|Attributes")
-	float GetMoveSpeed() const;
-
-	// Gets the Base value of MoveSpeed
-	UFUNCTION(BlueprintCallable, Category = "GASShooter|GSCharacter|Attributes")
-	float GetMoveSpeedBaseValue() const;
+	float GetMaxArmor() const;
 
 protected:
 	FGameplayTag DeadTag;
@@ -120,6 +106,9 @@ protected:
 	// Reference to the AttributeSetBase. It will live on the PlayerState or here if the character doesn't have a PlayerState.
 	UPROPERTY()
 	class UGSAttributeSetBase* AttributeSetBase;
+
+	UPROPERTY()
+	class UGSAttributeSetMobility* AttributeSetMovement;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "GASShooter|GSCharacter")
 	FText CharacterName;
@@ -168,7 +157,6 @@ protected:
 	*/
 
 	virtual void SetHealth(float Health);
-	virtual void SetMana(float Mana);
-	virtual void SetStamina(float Stamina);
-	virtual void SetShield(float Shield);
+	virtual void SetFuel(float Fuel);
+	virtual void SetArmor(float Armor);
 };

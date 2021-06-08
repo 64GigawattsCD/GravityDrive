@@ -1,10 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GravRacerAssetManager.h"
-//#include "Items/GravRacerItem.h"
+#include "Assets/CharacterDataAsset.h"
+#include "Assets/VehicleDataAsset.h"
 #include "AbilitySystemGlobals.h"
 
-const FPrimaryAssetType	UGravRacerAssetManager::RacerDataType = TEXT("Racer");
+const FPrimaryAssetType	UGravRacerAssetManager::CharacterDataType = TEXT("Character");
 const FPrimaryAssetType	UGravRacerAssetManager::VehicleDataType = TEXT("Vehicle");
 /*
 const FPrimaryAssetType	UGravRacerAssetManager::PotionItemType = TEXT("Potion");
@@ -34,18 +35,34 @@ void UGravRacerAssetManager::StartInitialLoading()
 	UAbilitySystemGlobals::Get().InitGlobalData();
 }
 
-/*
-UGravRacerItem* UGravRacerAssetManager::ForceLoadItem(const FPrimaryAssetId& PrimaryAssetId, bool bLogWarning)
+
+UCharacterDataAsset* UGravRacerAssetManager::ForceLoadCharacter(const FPrimaryAssetId& PrimaryAssetId, bool bLogWarning)
 {	
 	FSoftObjectPath ItemPath = GetPrimaryAssetPath(PrimaryAssetId);
 
 	// This does a synchronous load and may hitch
-	UGravRacerItem* LoadedItem = Cast<UGravRacerItem>(ItemPath.TryLoad());
+	UCharacterDataAsset* LoadedItem = Cast<UCharacterDataAsset>(ItemPath.TryLoad());
 
 	if (bLogWarning && LoadedItem == nullptr)
 	{
-		UE_LOG(LogActionGravRacer, Warning, TEXT("Failed to load item for identifier %s!"), *PrimaryAssetId.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load item for identifier %s!"), *PrimaryAssetId.ToString());
 	}
 
 	return LoadedItem;
-}*/
+}
+
+
+UVehicleDataAsset* UGravRacerAssetManager::ForceLoadVehicle(const FPrimaryAssetId& PrimaryAssetId, bool bLogWarning)
+{
+	FSoftObjectPath ItemPath = GetPrimaryAssetPath(PrimaryAssetId);
+
+	// This does a synchronous load and may hitch
+	UVehicleDataAsset* LoadedItem = Cast<UVehicleDataAsset>(ItemPath.TryLoad());
+
+	if (bLogWarning && LoadedItem == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load item for identifier %s!"), *PrimaryAssetId.ToString());
+	}
+
+	return LoadedItem;
+}

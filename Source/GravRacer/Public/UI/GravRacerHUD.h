@@ -2,6 +2,7 @@
 
 #pragma once
 #include "GravRacerTypes.h"
+#include "GameFramework/HUD.h"
 #include "GravRacerHUD.generated.h"
 
 class AVehicleTrackPoint;
@@ -101,21 +102,6 @@ protected:
 	void Quit();
 
 	void DrawDebugInfoString(const FString& Text, float PosX, float PosY, bool bAlignLeft, bool bAlignTop, const FColor& TextColor);
-
-	UPROPERTY()
-	UMaterialInstanceConstant* SpeedMeterMaterialConst;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* SpeedMeterMaterial;
-
-	UPROPERTY()
-	UFont* HUDFont;
-
-	UPROPERTY()
-	UTexture2D* TimerBackground;
-
-	UPROPERTY()
-	UTexture2D* PlaceBackground;
 
 	TArray<char> HighScoreName;
 

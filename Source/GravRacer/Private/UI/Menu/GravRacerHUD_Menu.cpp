@@ -29,14 +29,14 @@ void AGravRacerHUD_Menu::PostInitializeComponents()
 
 void AGravRacerHUD_Menu::PlaySolo()
 {
-	GEngine->SetClientTravel(GetWorld(), TEXT("/Game/Maps/VehicleEntry"), TRAVEL_Absolute);
+	GEngine->SetClientTravel(GetWorld(), TEXT("/Game/Maps/GravityDrive_P"), TRAVEL_Absolute);
 	FSlateApplication::Get().SetAllUserFocusToGameViewport();
 	ShowLoadingScreen();
 }
 
 void AGravRacerHUD_Menu::HostLocal()
 {
-	GEngine->SetClientTravel(GetWorld(), TEXT("/Game/Maps/VehicleEntry?listen"), TRAVEL_Absolute);
+	GEngine->SetClientTravel(GetWorld(), TEXT("/Game/Maps/GravityDrive_P?listen"), TRAVEL_Absolute);
 	FSlateApplication::Get().SetAllUserFocusToGameViewport();
 	ShowLoadingScreen();
 }

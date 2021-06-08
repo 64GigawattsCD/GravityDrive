@@ -1,0 +1,42 @@
+{
+	"FileVersion": 3,
+	"Version": 15,
+	"VersionName": "2.1.5",
+	"FriendlyName": "TerraForm",
+	"Description": "Plugin for GIS data utilization",
+	"Category": "Editor",
+	"CreatedBy": "TerraForm Pro",
+	"CreatedByURL": "https://terraformpro.com/",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://terraformpro.com/tutorials/",
+	"EngineVersion": "4.26.0",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "TerraForm_Runtime",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64"
+			]
+		},
+		{
+			"Name": "TerraForm_EditorAssets",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64"
+			]
+		},
+		{
+			"Name": "TerraForm_Editor",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64"
+			]
+		}
+	]
+}

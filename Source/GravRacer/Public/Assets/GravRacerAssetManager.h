@@ -6,7 +6,8 @@
 #include "Engine/AssetManager.h"
 #include "GravRacerAssetManager.generated.h"
 
-class UGravRacerItem;
+class UCharacterDataAsset;
+class UVehicleDataAsset;
 
 /**
  * Game implementation of asset manager, overrides functionality and stores game-specific types
@@ -24,7 +25,7 @@ public:
 	virtual void StartInitialLoading() override;
 
 	/** Static types for data assets */
-	static const FPrimaryAssetType	RacerDataType;
+	static const FPrimaryAssetType	CharacterDataType;
 	static const FPrimaryAssetType	VehicleDataType;
 
 	/** Static types for items */
@@ -43,6 +44,8 @@ public:
 	 * @param PrimaryAssetId The asset identifier to load
 	 * @param bDisplayWarning If true, this will log a warning if the item failed to load
 	 */
-	//UGravRacerItem* ForceLoadItem(const FPrimaryAssetId& PrimaryAssetId, bool bLogWarning = true);
+
+	UCharacterDataAsset* ForceLoadCharacter(const FPrimaryAssetId& PrimaryAssetId, bool bLogWarning = false);
+	UVehicleDataAsset* ForceLoadVehicle(const FPrimaryAssetId& PrimaryAssetId, bool bLogWarning = false);
 };
 

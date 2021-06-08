@@ -4,21 +4,26 @@
 
 #include "GravRacerBlueprintLibrary.generated.h"
 
+class UCharacterDataAsset;
+class UVehicleDataAsset;
+
 UCLASS()
 class UGravRacerBlueprintLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
 
+public:
+
 	/*
-	// Finishes the race 
+	// Finishes the race
 	UFUNCTION(BlueprintCallable, Category=Game, meta=(WorldContext="WorldContextObject"))
 	static void FinishRace(UObject* WorldContextObject);
 
-	// Shows blinking message at the bottom of the screen 
+	// Shows blinking message at the bottom of the screen
 	UFUNCTION(BlueprintCallable, Category=Game, meta=(WorldContext="WorldContextObject"))
 	static void SetInfoText(UObject* WorldContextObject, FString InfoText);
 
-	// Hides info message 
+	// Hides info message
 	UFUNCTION(BlueprintCallable, Category=Game, meta=(WorldContext="WorldContextObject"))
 	static void HideInfoText(UObject* WorldContextObject);
 
@@ -29,4 +34,10 @@ class UGravRacerBlueprintLibrary : public UBlueprintFunctionLibrary
 	//shows/hides game HUD
 	UFUNCTION(BlueprintCallable, Category=HUD, meta=(WorldContext="WorldContextObject"))
 	static void ShowHUD(UObject* WorldContextObject, bool bEnable);*/
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	static TArray<UCharacterDataAsset*> GetAllCharacters();
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	static TArray<UVehicleDataAsset*> GetAllVehicles();
 };

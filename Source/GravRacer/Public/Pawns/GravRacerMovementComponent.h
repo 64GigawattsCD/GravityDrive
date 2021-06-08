@@ -131,11 +131,19 @@ public:
 	
 protected:
 
-	UPROPERTY()
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetThrottle(float NewThrottle);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetSteering(float NewSteering);
+
+	UPROPERTY(Transient, Replicated)
 	float Throttle;
 
-	UPROPERTY()
+	UPROPERTY(Transient, Replicated)
 	float Steering;
+
+	UPROPERTY()
 	float DesiredSteeringSpeed;
 
 	//UPROPERTY()
@@ -155,6 +163,7 @@ protected:
 	void PhysicsSteering(float DeltaSeconds);
 	void PhysicsThrottle(float DeltaSeconds);
 	void ApplyFriction(float DeltaSeconds);
+	void ApplyGravity(float DeltaSeconds);
 	
 	UPROPERTY()
 	TArray<USceneComponent*> HoverPoints;

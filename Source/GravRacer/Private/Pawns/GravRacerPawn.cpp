@@ -2,7 +2,7 @@
 
 #include "Pawns/GravRacerPawn.h"
 
-#include "Particles/ParticleSystemComponent.h"
+#include "Player/GSPlayerState.h"
 #include "Player/GSPlayerController.h"
 #include "AI/GravRacerAIController.h"
 #include "Pawns/GravRacerMovementComponent.h"
@@ -10,13 +10,14 @@
 #include "Track/VehicleTrackPoint.h"
 
 #include "Components/WidgetComponent.h"
+#include "Components/AudioComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Camera/CameraShake.h"
 
 #include "Characters/Abilities/GSAbilitySystemComponent.h"
 #include "Characters/Abilities/GSAbilitySystemGlobals.h"
-#include "Characters/Abilities/AttributeSets/GSAmmoAttributeSet.h"
 #include "Characters/Abilities/AttributeSets/GSAttributeSetBase.h"
 
 #include "UI/GSFloatingStatusBarWidget.h"
@@ -33,16 +34,16 @@ TMap<uint32, AGravRacerPawn::FVehicleDesiredRPM> AGravRacerPawn::VehicleDesiredR
 AGravRacerPawn::AGravRacerPawn(const FObjectInitializer& ObjectInitializer) : 
 	Super(ObjectInitializer)
 {
-	/** Camera strategy:
-	 *  We want to keep a constant distance between car's location and camera.
-	 *	We want to interpolate yaw very slightly
-	 *	We want to keep car almost constant in screen space width and height (i.e. if you draw a box around the car its center would be near constant and its dimensions would only vary on sharp turns or declines */
+	bReplicates = true;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh0"));
 	Mesh->SetSimulatePhysics(true);
 	SetRootComponent(Mesh);
-
+	Mesh->SetIsReplicated(true);
+	Mesh->SetEnableGravity(true);
+	
 	MovementComponent = CreateDefaultSubobject<UGravRacerMovementComponent>(TEXT("MovementComponent"));
+	MovementComponent->SetIsReplicated(true);
 
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
@@ -91,6 +92,25 @@ AGravRacerPawn::AGravRacerPawn(const FObjectInitializer& ObjectInitializer) :
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorld;
 	AIControllerClass = AGravRacerAIController::StaticClass();
+
+	// Create ability system component, and set it to be explicitly replicated
+	AbilitySystemComponent = CreateDefaultSubobject<UGSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+
+	//TODO: revisit this if full replication needed
+	// Mixed mode would mean we only are replicated the GEs to ourself, not the GEs to simulated proxies.
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	//Make sure we have actor info, hookup ability system component to actor info
+	FGameplayAbilityActorInfo* actorInfo = new FGameplayAbilityActorInfo();
+	actorInfo->InitFromActor(this, this, AbilitySystemComponent);
+	AbilitySystemComponent->AbilityActorInfo = TSharedPtr<FGameplayAbilityActorInfo>(actorInfo);
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+	// Create the attribute set, this replicates by default
+	// Adding it as a subobject of the owning actor of an AbilitySystemComponent
+	// automatically registers the AttributeSet with the AbilitySystemComponent
+	AttributeSetBase = CreateDefaultSubobject<UGSAttributeSetBase>(TEXT("AttributeSetBase"));
 }
 
 /**
@@ -252,6 +272,7 @@ void AGravRacerPawn::PossessedBy(AController* NewController)
 
 		// Set the AttributeSetBase for convenience attribute functions
 		AttributeSetBase = PS->GetAttributeSetBase();
+		AttributeSetMovement = PS->GetAttributeSetMovement();
 
 		//AmmoAttributeSet = PS->GetAmmoAttributeSet();
 
@@ -273,9 +294,7 @@ void AGravRacerPawn::PossessedBy(AController* NewController)
 		{
 			// Set Health/Mana/Stamina to their max. This is only necessary for *Respawn*.
 			SetHealth(GetMaxHealth());
-			SetMana(GetMaxMana());
-			SetStamina(GetMaxStamina());
-			SetShield(GetMaxShield());
+			SetFuel(SpawnFuel);
 		}
 
 		// Remove Dead tag
@@ -331,8 +350,8 @@ void AGravRacerPawn::InitializeFloatingStatusBar()
 
 				// Setup the floating status bar
 				UIFloatingStatusBar->SetHealthPercentage(GetHealth() / GetMaxHealth());
-				UIFloatingStatusBar->SetManaPercentage(GetMana() / GetMaxMana());
-				UIFloatingStatusBar->SetShieldPercentage(GetShield() / GetMaxShield());
+				//UIFloatingStatusBar->SetManaPercentage(GetMana() / GetMaxMana());
+				//UIFloatingStatusBar->SetShieldPercentage(GetShield() / GetMaxShield());
 				UIFloatingStatusBar->OwningCharacter = this;
 				UIFloatingStatusBar->SetCharacterName(CharacterName);
 			}

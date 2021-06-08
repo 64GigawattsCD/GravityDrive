@@ -2,15 +2,23 @@
 
 
 #include "Player/GSPlayerState.h"
-#include "Characters/Abilities/AttributeSets/GSAmmoAttributeSet.h"
-#include "Characters/Abilities/AttributeSets/GSAttributeSetBase.h"
-#include "Characters/Abilities/GSAbilitySystemComponent.h"
-#include "Characters/Abilities/GSAbilitySystemGlobals.h"
 #include "Pawns/GravRacerPawn.h"
 #include "Player/GSPlayerController.h"
+
+#include "Assets/CharacterDataAsset.h"
+#include "Assets/VehicleDataAsset.h"
+
+#include "Characters/Abilities/AttributeSets/GSAttributeSetBase.h"
+#include "Characters/Abilities/AttributeSets/GSAttributeSetMobility.h"
+#include "Characters/Abilities/GSAbilitySystemComponent.h"
+#include "Characters/Abilities/GSAbilitySystemGlobals.h"
+
 #include "UI/GSFloatingStatusBarWidget.h"
 #include "UI/GSHUDWidget.h"
+
 #include "Weapons/GSWeapon.h"
+
+#include "Net/UnrealNetwork.h"
 
 AGSPlayerState::AGSPlayerState()
 {
@@ -26,8 +34,7 @@ AGSPlayerState::AGSPlayerState()
 	// Adding it as a subobject of the owning actor of an AbilitySystemComponent
 	// automatically registers the AttributeSet with the AbilitySystemComponent
 	AttributeSetBase = CreateDefaultSubobject<UGSAttributeSetBase>(TEXT("AttributeSetBase"));
-
-	AmmoAttributeSet = CreateDefaultSubobject<UGSAmmoAttributeSet>(TEXT("AmmoAttributeSet"));
+	AttributeSetMovement = CreateDefaultSubobject<UGSAttributeSetMobility>(TEXT("AttributeSetMobility"));
 
 	// Set PlayerState's NetUpdateFrequency to the same as the Character.
 	// Default is very low for PlayerStates and introduces perceived lag in the ability system.
@@ -48,9 +55,10 @@ UGSAttributeSetBase* AGSPlayerState::GetAttributeSetBase() const
 	return AttributeSetBase;
 }
 
-UGSAmmoAttributeSet* AGSPlayerState::GetAmmoAttributeSet() const
+
+class UGSAttributeSetMobility* AGSPlayerState::GetAttributeSetMovement() const
 {
-	return AmmoAttributeSet;
+	return AttributeSetMovement;
 }
 
 bool AGSPlayerState::IsAlive() const
@@ -138,59 +146,19 @@ float AGSPlayerState::GetHealthRegenRate() const
 	return AttributeSetBase->GetHealthRegenRate();
 }
 
-float AGSPlayerState::GetMana() const
-{
-	return AttributeSetBase->GetMana();
-}
-
-float AGSPlayerState::GetMaxMana() const
-{
-	return AttributeSetBase->GetMaxMana();
-}
-
-float AGSPlayerState::GetManaRegenRate() const
-{
-	return AttributeSetBase->GetManaRegenRate();
-}
-
-float AGSPlayerState::GetStamina() const
-{
-	return AttributeSetBase->GetStamina();
-}
-
-float AGSPlayerState::GetMaxStamina() const
-{
-	return AttributeSetBase->GetMaxStamina();
-}
-
-float AGSPlayerState::GetStaminaRegenRate() const
-{
-	return AttributeSetBase->GetStaminaRegenRate();
-}
-
-float AGSPlayerState::GetShield() const
-{
-	return AttributeSetBase->GetShield();
-}
-
-float AGSPlayerState::GetMaxShield() const
-{
-	return AttributeSetBase->GetMaxShield();
-}
-
-float AGSPlayerState::GetShieldRegenRate() const
-{
-	return AttributeSetBase->GetShieldRegenRate();
-}
-
 float AGSPlayerState::GetArmor() const
 {
 	return AttributeSetBase->GetArmor();
 }
 
-float AGSPlayerState::GetMoveSpeed() const
+float AGSPlayerState::GetMaxArmor() const
 {
-	return AttributeSetBase->GetMoveSpeed();
+	return AttributeSetBase->GetMaxArmor();
+}
+
+float AGSPlayerState::GetArmorRegenRate() const
+{
+	return AttributeSetBase->GetArmorRegenRate();
 }
 
 int32 AGSPlayerState::GetCharacterLevel() const
@@ -218,30 +186,41 @@ int32 AGSPlayerState::GetGoldBounty() const
 	return AttributeSetBase->GetGoldBounty();
 }
 
-int32 AGSPlayerState::GetPrimaryClipAmmo() const
-{
-	AGravRacerPawn* Hero = GetPawn<AGravRacerPawn>();
-	if (Hero)
-	{
-		//return Hero->GetPrimaryClipAmmo();
-	}
 
-	return 0;
+void AGSPlayerState::OnRep_Character()
+{
+	OnCharacterSelected.Broadcast(Character, CharacterSkin);
 }
 
-int32 AGSPlayerState::GetPrimaryReserveAmmo() const
+void AGSPlayerState::OnRep_Vehicle()
 {
-	AGravRacerPawn* Hero = GetPawn<AGravRacerPawn>();
-	if (Hero && Hero->GetCurrentWeapon() && AmmoAttributeSet)
-	{
-		FGameplayAttribute Attribute = AmmoAttributeSet->GetReserveAmmoAttributeFromTag(Hero->GetCurrentWeapon()->PrimaryAmmoType);
-		if (Attribute.IsValid())
-		{
-			return AbilitySystemComponent->GetNumericAttribute(Attribute);
-		}
-	}
+	OnVehicleSelected.Broadcast(Vehicle, VehicleSkin);
+}
 
-	return 0;
+void AGSPlayerState::SetSelectedVehicle_Implementation(UVehicleDataAsset* NewVehicle, int32 Skin /*= 0*/)
+{
+	Vehicle = NewVehicle;
+	VehicleSkin = Skin;
+	OnRep_Vehicle();
+}
+
+bool AGSPlayerState::SetSelectedVehicle_Validate(UVehicleDataAsset* NewVehicle, int32 Skin /*= 0*/)
+{
+	//TODO: validate skin has been purchased
+	return true;
+}
+
+void AGSPlayerState::SetSelectedCharacter_Implementation(UCharacterDataAsset* NewCharacter, int32 Skin /*= 0*/)
+{
+	Character = NewCharacter;
+	CharacterSkin = Skin;
+	OnRep_Character();
+}
+
+bool AGSPlayerState::SetSelectedCharacter_Validate(UCharacterDataAsset* NewCharacter, int32 Skin /*= 0*/)
+{
+	//TODO: validate skin has been purchased
+	return true;
 }
 
 void AGSPlayerState::BeginPlay()
@@ -276,4 +255,15 @@ int32 AGSPlayerState::GetTeamNum()
 {
 	//TODO:
 	return 0;
+}
+
+void AGSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(AGSPlayerState, Character, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(AGSPlayerState, CharacterSkin, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(AGSPlayerState, Vehicle, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(AGSPlayerState, VehicleSkin, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME(AGSPlayerState, RespawnLocation);
 }

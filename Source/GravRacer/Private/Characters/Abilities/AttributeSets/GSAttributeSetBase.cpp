@@ -11,7 +11,7 @@
 UGSAttributeSetBase::UGSAttributeSetBase()
 {
 	// Cache tags
-	HeadShotTag = FGameplayTag::RequestGameplayTag(FName("Effect.Damage.HeadShot"));
+	//HeadShotTag = FGameplayTag::RequestGameplayTag(FName("Effect.Damage.HeadShot"));
 }
 
 void UGSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -24,18 +24,9 @@ void UGSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute
 	{
 		AdjustAttributeForMaxChange(Health, MaxHealth, NewValue, GetHealthAttribute());
 	}
-	else if (Attribute == GetMaxManaAttribute())
+	else if (Attribute == GetMaxArmorAttribute())
 	{
-		AdjustAttributeForMaxChange(Mana, MaxMana, NewValue, GetManaAttribute());
-	}
-	else if (Attribute == GetMaxStaminaAttribute())
-	{
-		AdjustAttributeForMaxChange(Stamina, MaxStamina, NewValue, GetStaminaAttribute());
-	}
-	else if (Attribute == GetMoveSpeedAttribute())
-	{
-		// Cannot slow less than 150 units/s and cannot boost more than 1000 units/s
-		NewValue = FMath::Clamp<float>(NewValue, 150, 1000);
+		AdjustAttributeForMaxChange(Armor, MaxArmor, NewValue, GetArmorAttribute());
 	}
 }
 
@@ -115,19 +106,19 @@ void UGSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 				//UE_LOG(LogTemp, Warning, TEXT("%s() %s is NOT alive when receiving damage"), *FString(__FUNCTION__), *TargetCharacter->GetName());
 			}
 
-			// Apply the damage to shield first if it exists
-			const float OldShield = GetShield();
-			float DamageAfterShield = LocalDamageDone - OldShield;
-			if (OldShield > 0)
+			// Apply the damage to Armor first if it exists
+			const float OldArmor = GetArmor();
+			float DamageAfterArmor = LocalDamageDone - OldArmor;
+			if (OldArmor > 0)
 			{
-				float NewShield = OldShield - LocalDamageDone;
-				SetShield(FMath::Clamp<float>(NewShield, 0.0f, GetMaxShield()));
+				float NewArmor = OldArmor - LocalDamageDone;
+				SetArmor(FMath::Clamp<float>(NewArmor, 0.0f, GetMaxArmor()));
 			}
 
-			if (DamageAfterShield > 0)
+			if (DamageAfterArmor > 0)
 			{
 				// Apply the health change and then clamp it
-				const float NewHealth = GetHealth() - DamageAfterShield;
+				const float NewHealth = GetHealth() - DamageAfterArmor;
 				SetHealth(FMath::Clamp(NewHealth, 0.0f, GetMaxHealth()));
 			}
 
@@ -144,10 +135,11 @@ void UGSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 					{
 						FGameplayTagContainer DamageNumberTags;
 
+						/*
 						if (Data.EffectSpec.DynamicAssetTags.HasTag(HeadShotTag))
 						{
 							DamageNumberTags.AddTagFast(HeadShotTag);
-						}
+						}*/
 
 						PC->ShowDamageNumber(LocalDamageDone, TargetCharacter, DamageNumberTags);
 					}
@@ -188,21 +180,11 @@ void UGSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 		// Health loss should go through Damage.
 		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
 	} // Health
-	else if (Data.EvaluatedData.Attribute == GetManaAttribute())
+	else if (Data.EvaluatedData.Attribute == GetArmorAttribute())
 	{
-		// Handle mana changes.
-		SetMana(FMath::Clamp(GetMana(), 0.0f, GetMaxMana()));
-	} // Mana
-	else if (Data.EvaluatedData.Attribute == GetStaminaAttribute())
-	{
-		// Handle stamina changes.
-		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));
-	}
-	else if (Data.EvaluatedData.Attribute == GetShieldAttribute())
-	{
-		// Handle shield changes.
-		SetShield(FMath::Clamp(GetShield(), 0.0f, GetMaxShield()));
-	}
+		// Handle Armor changes.
+		SetArmor(FMath::Clamp(GetArmor(), 0.0f, GetMaxArmor()));
+	} // Armor
 }
 
 void UGSAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -212,17 +194,9 @@ void UGSAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, HealthRegenRate, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, Mana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, MaxMana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, ManaRegenRate, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, Stamina, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, MaxStamina, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, StaminaRegenRate, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, Shield, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, MaxShield, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, ShieldRegenRate, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, Armor, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, MoveSpeed, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, MaxArmor, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, ArmorRegenRate, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, CharacterLevel, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, XP, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGSAttributeSetBase, XPBounty, COND_None, REPNOTIFY_Always);
@@ -259,59 +233,19 @@ void UGSAttributeSetBase::OnRep_HealthRegenRate(const FGameplayAttributeData& Ol
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, HealthRegenRate, OldHealthRegenRate);
 }
 
-void UGSAttributeSetBase::OnRep_Mana(const FGameplayAttributeData& OldMana)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, Mana, OldMana);
-}
-
-void UGSAttributeSetBase::OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, MaxMana, OldMaxMana);
-}
-
-void UGSAttributeSetBase::OnRep_ManaRegenRate(const FGameplayAttributeData& OldManaRegenRate)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, ManaRegenRate, OldManaRegenRate);
-}
-
-void UGSAttributeSetBase::OnRep_Stamina(const FGameplayAttributeData& OldStamina)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, Stamina, OldStamina);
-}
-
-void UGSAttributeSetBase::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, MaxStamina, OldMaxStamina);
-}
-
-void UGSAttributeSetBase::OnRep_StaminaRegenRate(const FGameplayAttributeData& OldStaminaRegenRate)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, StaminaRegenRate, OldStaminaRegenRate);
-}
-
-void UGSAttributeSetBase::OnRep_Shield(const FGameplayAttributeData& OldShield)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, Shield, OldShield);
-}
-
-void UGSAttributeSetBase::OnRep_MaxShield(const FGameplayAttributeData& OldMaxShield)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, MaxShield, OldMaxShield);
-}
-
-void UGSAttributeSetBase::OnRep_ShieldRegenRate(const FGameplayAttributeData& OldShieldRegenRate)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, ShieldRegenRate, OldShieldRegenRate);
-}
-
 void UGSAttributeSetBase::OnRep_Armor(const FGameplayAttributeData& OldArmor)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, Armor, OldArmor);
 }
 
-void UGSAttributeSetBase::OnRep_MoveSpeed(const FGameplayAttributeData& OldMoveSpeed)
+void UGSAttributeSetBase::OnRep_MaxArmor(const FGameplayAttributeData& OldMaxArmor)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, MoveSpeed, OldMoveSpeed);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, MaxArmor, OldMaxArmor);
+}
+
+void UGSAttributeSetBase::OnRep_ArmorRegenRate(const FGameplayAttributeData& OldArmorRegenRate)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGSAttributeSetBase, ArmorRegenRate, OldArmorRegenRate);
 }
 
 void UGSAttributeSetBase::OnRep_CharacterLevel(const FGameplayAttributeData& OldCharacterLevel)

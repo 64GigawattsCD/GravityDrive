@@ -5,7 +5,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
-//#include "Bots/ShooterBot.h"
+#include "Pawns/GravRacerPawn.h"
 #include "AI/GravRacerAIController.h"
 #include "Player/GSPlayerState.h"
 

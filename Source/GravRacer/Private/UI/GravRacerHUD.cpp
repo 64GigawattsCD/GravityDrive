@@ -9,34 +9,14 @@
 #include "Widgets/SGravRacerControlsSetup.h"
 #include "UI/Style/GravRacerMenuSoundsWidgetStyle.h"
 #include "GravRacerUserSettings.h"
-#include "GASShooterGameModeBase.h"
+#include "GravRacerGameMode.h"
+#include "CanvasItem.h"
+#include "Engine/Canvas.h"
 
 #define LOCTEXT_NAMESPACE "GravRacer.hUD.Menu"
 
 AGravRacerHUD::AGravRacerHUD(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	static ConstructorHelpers::FObjectFinder<UMaterialInstanceConstant> SpeedMeterObj(TEXT("/Game/UI/HUD/Materials/M_VH_HUD_SpeedMeter_UI"));
-
-	static ConstructorHelpers::FObjectFinder<UFont> HUDFontOb(TEXT("/Game/UI/HUD/UI_Vehicle_Font"));
-
-	static ConstructorHelpers::FObjectFinder<UTexture2D> TimerBgObj(TEXT("/Game/UI/HUD/Background/T_VH_Hud_Timer_Background"));
-	static ConstructorHelpers::FObjectFinder<UTexture2D> PlaceBgObj(TEXT("/Game/UI/HUD/Background/T_VH_Hud_Place_Background"));
-
-
-	static ConstructorHelpers::FObjectFinder<UTexture2D> UpButtonTextureOb(TEXT("/Game/UI/HUD/UpButton"));
-	static ConstructorHelpers::FObjectFinder<UTexture2D> DownButtonTextureOb(TEXT("/Game/UI/HUD/DownButton"));
-
-	UpButtonTexture = UpButtonTextureOb.Object;
-	DownButtonTexture = DownButtonTextureOb.Object;
-
-	HUDFont = HUDFontOb.Object;
-
-	TimerBackground = TimerBgObj.Object;
-	PlaceBackground = PlaceBgObj.Object;
-	
-	SpeedMeterMaterialConst = SpeedMeterObj.Object;
-
-
 	LowHighList.Add(LOCTEXT("LowQuality","LOW QUALITY"));
 	LowHighList.Add(LOCTEXT("HighQuality","HIGH QUALITY"));
 
@@ -50,7 +30,7 @@ AGravRacerHUD::AGravRacerHUD(const FObjectInitializer& ObjectInitializer) : Supe
 
 void AGravRacerHUD::BeginPlay()
 {
-	SpeedMeterMaterial = UMaterialInstanceDynamic::Create(SpeedMeterMaterialConst, nullptr);
+	
 }
 
 void AGravRacerHUD::DrawHUD()
@@ -217,7 +197,7 @@ void AGravRacerHUD::ToggleGameMenu()
 	}
 
 	// Make the game pause (network games will not pause!)
-	AGASShooterGameModeBase* const MyGame = GetWorld()->GetAuthGameMode<AGASShooterGameModeBase>();
+	AGravRacerGameMode* const MyGame = GetWorld()->GetAuthGameMode<AGravRacerGameMode>();
 	if( MyGame )
 	{
 		//TODO
